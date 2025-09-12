@@ -1,16 +1,21 @@
-FROM node:18.18.0-alpine AS builder
+FROM node:20-bookworm-slim AS builder
 
 WORKDIR /app
 
-COPY package.json yarn.lock ./
+COPY package.json pnpm-lock.yaml ./
+COPY prisma ./prisma
 
-RUN yarn install --frozen-lockfile
+ENV PRISMA_SKIP_POSTINSTALL_GENERATE=1
+
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
 
 COPY . .
 
-RUN yarn build
+RUN pnpm exec prisma generate
 
-FROM node:18.18.0-alpine AS runner
+RUN pnpm build
+
+FROM node:20-bookworm-slim AS runner
 
 WORKDIR /app
 

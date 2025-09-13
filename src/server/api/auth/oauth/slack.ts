@@ -1,7 +1,6 @@
 import prisma from '~/server/prisma'
 import type { Request, Response } from 'express'
 import fetch from 'node-fetch'
-import { URLSearchParams } from 'url'
 import env from '~/env'
 import { logger } from '~/server/utils/logger'
 
@@ -67,7 +66,10 @@ export default async function slackOauth(req: Request, res: Response) {
       }),
     })
 
-    const response = await rawResponse.json()
+    const response = (await rawResponse.json()) as {
+      access_token?: string
+      error?: string
+    }
 
     if (response.access_token) {
       await prisma.organization.update({
